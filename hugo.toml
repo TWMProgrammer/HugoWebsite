@@ -1,0 +1,31 @@
+baseURL = 'https://hugo.twm420.com/'
+languageCode = 'en-us'
+title = 'Ramblings'
+theme = 'hugo-book'
+
+# Book configuration
+disablePathToLower = true
+
+# Needed for mermaid/katex shortcodes
+[markup]
+[markup.goldmark.renderer]
+  unsafe = true
+
+[markup.tableOfContents]
+  startLevel = 1
+
+[params]
+  # Sets color theme: light, dark or auto
+  BookTheme = 'dark'
+
+  # Controls table of contents visibility on right side of pages
+  BookToC = true
+
+  # Enable search function
+  BookSearch = true
+
+  # Set to false to hide the menu button
+  BookMenuBundle = true
+
+  # Set menu to docs section
+  BookSection = 'docs'
