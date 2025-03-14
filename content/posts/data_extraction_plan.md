@@ -397,53 +397,183 @@ The following data points need to be extracted:
 
 ### 4.1 Average Messages per Tutor Calculation
 
-```csharp
-public async Task<decimal> CalculateAverageMessagesPerTutor()
-{
-    var result = await _context.Tutors
-        .Select(t => new {
-            t.Id,
-            MessageCount = _context.Messages.Count(m => m.TutorId == t.Id)
-        })
-        .GroupBy(t => 1)
-        .Select(g => g.Average(t => t.MessageCount))
-        .FirstOrDefaultAsync();
+#### PDF Export Implementation
 
-    return result;
+```csharp
+public async Task<byte[]> GenerateTutorPerformancePdfReport()
+{
+    var tutors = await _messageService.GetAverageMessagesPerTutor();
+
+    using var document = new PdfDocument();
+    var page = document.AddPage();
+    var gfx = XGraphics.FromPdfPage(page);
+    var font = new XFont("Arial", 12);
+
+    // Add title and headers
+    gfx.DrawString("Tutor Performance Report", new XFont("Arial", 16, XFontStyle.Bold),
+        XBrushes.Black, new XRect(50, 50, page.Width, 30), XStringFormats.TopLeft);
+
+    var yPos = 100;
+    foreach (var tutor in tutors)
+    {
+        gfx.DrawString($"Tutor: {tutor.Name} - Messages: {tutor.MessageCount}",
+            font, XBrushes.Black, 50, yPos);
+        yPos += 20;
+    }
+
+    using var stream = new MemoryStream();
+    document.Save(stream);
+    return stream.ToArray();
+}
+```
+
+#### Excel Export Implementation
+
+```csharp
+public async Task<byte[]> GenerateTutorPerformanceExcelReport()
+{
+    var tutors = await _messageService.GetAverageMessagesPerTutor();
+
+    using var package = new ExcelPackage();
+    var worksheet = package.Workbook.Worksheets.Add("Tutor Performance");
+
+    // Add headers
+    worksheet.Cells["A1"].Value = "Tutor Name";
+    worksheet.Cells["B1"].Value = "Message Count";
+    worksheet.Cells["C1"].Value = "Average Messages";
+
+    var row = 2;
+    foreach (var tutor in tutors)
+    {
+        worksheet.Cells[row, 1].Value = tutor.Name;
+        worksheet.Cells[row, 2].Value = tutor.MessageCount;
+        worksheet.Cells[row, 3].Formula = $"=B{row}/COUNT(B:B)";
+        row++;
+    }
+
+    worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+    return package.GetAsByteArray();
 }
 ```
 
 ### 4.2 Student-Tutor Assignment Check
 
+#### PDF Export Implementation
+
 ```csharp
-public async Task<List<UnassignedStudentDto>> GetUnassignedStudents()
+public async Task<byte[]> GenerateUnassignedStudentsPdfReport()
 {
-    return await _context.Students
-        .Where(s => s.TutorId == null && s.IsActive)
-        .Select(s => new UnassignedStudentDto {
-            Id = s.Id,
-            Name = s.FullName,
-            RegisteredAt = s.CreatedAt
-        })
-        .AsNoTracking()
-        .ToListAsync();
+    var students = await _studentService.GetUnassignedStudents();
+
+    using var document = new PdfDocument();
+    var page = document.AddPage();
+    var gfx = XGraphics.FromPdfPage(page);
+    var font = new XFont("Arial", 12);
+
+    gfx.DrawString("Unassigned Students Report", new XFont("Arial", 16, XFontStyle.Bold),
+        XBrushes.Black, new XRect(50, 50, page.Width, 30), XStringFormats.TopLeft);
+
+    var yPos = 100;
+    foreach (var student in students)
+    {
+        gfx.DrawString($"Student: {student.FullName} ({student.Email})",
+            font, XBrushes.Black, 50, yPos);
+        yPos += 20;
+    }
+
+    using var stream = new MemoryStream();
+    document.Save(stream);
+    return stream.ToArray();
+}
+```
+
+#### Excel Export Implementation
+
+```csharp
+public async Task<byte[]> GenerateUnassignedStudentsExcelReport()
+{
+    var students = await _studentService.GetUnassignedStudents();
+
+    using var package = new ExcelPackage();
+    var worksheet = package.Workbook.Worksheets.Add("Unassigned Students");
+
+    worksheet.Cells["A1"].Value = "Student Name";
+    worksheet.Cells["B1"].Value = "Email";
+    worksheet.Cells["C1"].Value = "Registration Date";
+
+    var row = 2;
+    foreach (var student in students)
+    {
+        worksheet.Cells[row, 1].Value = student.FullName;
+        worksheet.Cells[row, 2].Value = student.Email;
+        worksheet.Cells[row, 3].Value = student.RegistrationDate;
+        row++;
+    }
+
+    worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+    return package.GetAsByteArray();
 }
 ```
 
 ### 4.3 Engagement Tracking with Date Filters
 
+#### PDF Export Implementation
+
 ```csharp
-public async Task<EngagementStats> GetEngagementStats(DateTime startDate, DateTime endDate)
+public async Task<byte[]> GenerateInactiveStudentsPdfReport(int days)
 {
-    return await _context.Students
-        .Where(s => s.LastLogin >= startDate && s.LastLogin <= endDate)
-        .GroupBy(s => 1)
-        .Select(g => new EngagementStats {
-            ActiveUsers = g.Count(),
-            AvgLoginFrequency = g.Average(s => s.LoginCount),
-            TotalSessions = g.Sum(s => s.SessionCount)
-        })
-        .FirstOrDefaultAsync() ?? new EngagementStats();
+    var students = await _studentService.GetInactiveStudents(days);
+
+    using var document = new PdfDocument();
+    var page = document.AddPage();
+    var gfx = XGraphics.FromPdfPage(page);
+    var font = new XFont("Arial", 12);
+
+    gfx.DrawString($"Inactive Students Report (Last {days} days)",
+        new XFont("Arial", 16, XFontStyle.Bold),
+        XBrushes.Black, new XRect(50, 50, page.Width, 30), XStringFormats.TopLeft);
+
+    var yPos = 100;
+    foreach (var student in students)
+    {
+        gfx.DrawString($"Student: {student.FullName} - Last Login: {student.LastLoginTime}",
+            font, XBrushes.Black, 50, yPos);
+        yPos += 20;
+    }
+
+    using var stream = new MemoryStream();
+    document.Save(stream);
+    return stream.ToArray();
+}
+```
+
+#### Excel Export Implementation
+
+```csharp
+public async Task<byte[]> GenerateInactiveStudentsExcelReport(int days)
+{
+    var students = await _studentService.GetInactiveStudents(days);
+
+    using var package = new ExcelPackage();
+    var worksheet = package.Workbook.Worksheets.Add("Inactive Students");
+
+    worksheet.Cells["A1"].Value = "Student Name";
+    worksheet.Cells["B1"].Value = "Email";
+    worksheet.Cells["C1"].Value = "Last Login";
+    worksheet.Cells["D1"].Value = "Days Inactive";
+
+    var row = 2;
+    foreach (var student in students)
+    {
+        worksheet.Cells[row, 1].Value = student.FullName;
+        worksheet.Cells[row, 2].Value = student.Email;
+        worksheet.Cells[row, 3].Value = student.LastLoginTime;
+        worksheet.Cells[row, 4].Formula = $"=DATEDIF(C{row},TODAY(),\"d\")";
+        row++;
+    }
+
+    worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+    return package.GetAsByteArray();
 }
 ```
 
