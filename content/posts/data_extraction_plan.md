@@ -100,7 +100,6 @@ The following data points need to be extracted:
       ```csharp
       public async Task<List<StudentResponse>> GetUnassignedStudents()
       {
-          // Assuming StudentTutorManagement table exists and has StudentId
           var unassignedStudents = await _context.Students
               .Where(s => !_context.StudentTutorManagements.Any(stm => stm.StudentId == s.Id))
               .Select(s => new StudentResponse { /* Map student properties */ })
@@ -143,8 +142,8 @@ The following data points need to be extracted:
 - **Database Query:**
 
   - Retrieve a list of all students.
-  - Check for interactions (messages, assignments, etc.) within the last 7 and 28 days.
-  - Filter the list to include students with no interactions within the specified timeframes.
+  - Check the LastLoginTime field to identify students who haven't logged in within the specified timeframe.
+  - Filter the list to include students with no recent login activity.
 
 - **Implementation:**
 
@@ -156,10 +155,17 @@ The following data points need to be extracted:
       ```csharp
       public async Task<List<StudentResponse>> GetInactiveStudents(int days)
       {
-          var inactiveStudents = await _context.Students
-              .Where(s => !_context.Messages.Any(m => m.StudentId == s.Id && m.SentDate >= DateTime.UtcNow.AddDays(-days)) &&
-                          !_context.Assignments.Any(a => a.StudentId == s.Id && a.SubmissionDate >= DateTime.UtcNow.AddDays(-days))) // Add other interaction types
-              .Select(s => new StudentResponse { /* Map student properties */ })
+          var cutoffDate = DateTime.UtcNow.AddDays(-days);
+          var inactiveStudents = await _context.Users
+              .Where(u => u.UserType == "Student")
+              .Where(u => u.LastLoginTime == null || u.LastLoginTime < cutoffDate)
+              .Select(u => new StudentResponse
+              {
+                  Id = u.Id,
+                  FullName = u.FullName,
+                  Email = u.Email,
+                  LastLoginTime = u.LastLoginTime
+              })
               .ToListAsync();
           return inactiveStudents;
       }
@@ -171,10 +177,6 @@ The following data points need to be extracted:
       {
           try
           {
-              if (days != 7 && days != 28)
-              {
-                  return BadRequest("Days must be 7 or 28.");
-              }
               var inactiveStudents = await _studentService.GetInactiveStudents(days);
               return Ok(inactiveStudents);
           }
@@ -186,32 +188,24 @@ The following data points need to be extracted:
       }
       ```
 
-- **Data Processing:** Filter the student list.
+- **Data Processing:** Filter the student list based on LastLoginTime.
 - **Technology Stack:** .NET, Entity Framework Core, SQL Server or another database.
 - **Pros:**
-  - Identifies students who may need attention.
+  - Simple and efficient query using LastLoginTime field.
+  - No complex joins or multiple date comparisons needed.
+  - Better performance with a single field comparison.
+  - Easy to maintain and understand.
 - **Cons:**
-  - The most complex query, potentially involving multiple joins and date comparisons. This can significantly impact performance.
   - Requires a new API endpoint.
-  - Performance is critical; database indexes are essential on `Messages.StudentId`, `Messages.SentDate`, `Assignments.StudentId`, and `Assignments.SubmissionDate`. Without proper indexing, this query can be extremely slow, especially with large datasets.
-  - Scalability: Performance can be a major concern with a large number of students, messages, and assignments. Requires careful query optimization, indexing, and potentially caching. Consider using a background job to pre-calculate and cache the inactive student lists.
   - Security: Requires proper authentication and authorization to prevent unauthorized access to student data.
 
 ### 3.4.1. 7-Day Inactivity
 
 - **API Endpoint:** `GET /api/students/inactive?days=7`
-- **Database Query:** (See 3.4)
-- **Implementation:** (See 3.4)
-- **Pros:** (See 3.4)
-- **Cons:** (See 3.4)
 
 ### 3.4.2. 28-Day Inactivity
 
 - **API Endpoint:** `GET /api/students/inactive?days=28`
-- **Database Query:** (See 3.4)
-- **Implementation:** (See 3.4)
-- **Pros:** (See 3.4)
-- **Cons:** (See 3.4)
 
 ### 3.4.3. Implementation Plan for 'lastlogin' field
 
@@ -252,9 +246,19 @@ The following data points need to be extracted:
 #### 3.5.1. PDF Files
 
 - **Methodology:**
-  - Generate PDF reports from data and templates
-  - Implement PDF file storage and retrieval mechanisms
-  - Provide API endpoints for PDF generation and download
+
+  - Generate PDF reports from data and templates using optimized database queries
+  - Implement PDF file storage with filesystem-based caching
+  - Provide API endpoints for PDF generation/download with JWT authentication
+  - Use EF Core compiled queries for performance
+  - Implement retry policies for database access
+  - Add validation for template parameters
+
+- **Query Optimization:**
+  - Use AsNoTracking() for read-only operations
+  - Implement Redis caching for frequently accessed templates
+  - Use pagination for large datasets
+  - Create covering indexes on message timestamps and tutor IDs
 - **Technology Stack:**
   - .NET
   - PDF Generation Libraries:
@@ -389,13 +393,67 @@ The following data points need to be extracted:
     - `400 Bad Request`: If the `reportType` is invalid.
     - `500 Internal Server Error`: For other errors.
 
-## 4. Technology Stack
+## 4. Example Implementations
+
+### 4.1 Average Messages per Tutor Calculation
+
+```csharp
+public async Task<decimal> CalculateAverageMessagesPerTutor()
+{
+    var result = await _context.Tutors
+        .Select(t => new {
+            t.Id,
+            MessageCount = _context.Messages.Count(m => m.TutorId == t.Id)
+        })
+        .GroupBy(t => 1)
+        .Select(g => g.Average(t => t.MessageCount))
+        .FirstOrDefaultAsync();
+
+    return result;
+}
+```
+
+### 4.2 Student-Tutor Assignment Check
+
+```csharp
+public async Task<List<UnassignedStudentDto>> GetUnassignedStudents()
+{
+    return await _context.Students
+        .Where(s => s.TutorId == null && s.IsActive)
+        .Select(s => new UnassignedStudentDto {
+            Id = s.Id,
+            Name = s.FullName,
+            RegisteredAt = s.CreatedAt
+        })
+        .AsNoTracking()
+        .ToListAsync();
+}
+```
+
+### 4.3 Engagement Tracking with Date Filters
+
+```csharp
+public async Task<EngagementStats> GetEngagementStats(DateTime startDate, DateTime endDate)
+{
+    return await _context.Students
+        .Where(s => s.LastLogin >= startDate && s.LastLogin <= endDate)
+        .GroupBy(s => 1)
+        .Select(g => new EngagementStats {
+            ActiveUsers = g.Count(),
+            AvgLoginFrequency = g.Average(s => s.LoginCount),
+            TotalSessions = g.Sum(s => s.SessionCount)
+        })
+        .FirstOrDefaultAsync() ?? new EngagementStats();
+}
+```
+
+## 5. Technology Stack
 
 - **.NET:** The backend is built using .NET.
 - **Entity Framework Core:** The ORM for database interaction.
-- **SQL Server (or similar):** The database.
+- **SQL Server (PostgreSQL):** The database.
 
-## 5. Technology Evaluation
+## 6. Technology Evaluation
 
 - **Pros:**
   - Mature and well-supported technologies.
@@ -407,7 +465,7 @@ The following data points need to be extracted:
   - Can be more complex than some other options.
   - Potential vendor lock-in with Microsoft technologies.
 
-## 6. Frontend Integration
+## 7. Frontend Integration
 
 The frontend integration will focus on displaying the extracted data in a clear and user-friendly manner. The specific implementation will depend on the existing frontend framework (Next.js, based on the file structure).
 
