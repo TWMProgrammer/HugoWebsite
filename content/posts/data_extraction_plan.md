@@ -603,14 +603,279 @@ The frontend integration will focus on displaying the extracted data in a clear 
   - **Display:** Show the average number of messages per tutor.
   - **UI Element:** Use a number display, a card, or a dashboard widget.
   - **Data Refresh:** Implement a periodic refresh (e.g., every 15 minutes) using `setInterval` or a similar mechanism to fetch the data from the `api/messages/tutor-performance` endpoint.
+
+```typescript
+// src/components/dashboard/TutorPerformance.tsx
+import { Card, Statistic, Spin } from "antd";
+import { useQuery } from "react-query";
+import { fetchTutorPerformance } from "@/lib/api";
+
+interface TutorPerformanceData {
+  averageMessages: number;
+}
+
+export const TutorPerformance = () => {
+  const { data, isLoading, error } = useQuery<TutorPerformanceData>(
+    "tutorPerformance",
+    fetchTutorPerformance,
+    { refetchInterval: 900000 } // 15 minutes refresh
+  );
+
+  if (error) {
+    return (
+      <Card>
+        <div>Error loading tutor performance data</div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card title="Tutor Performance">
+      <Spin spinning={isLoading}>
+        <Statistic
+          title="Average Messages per Tutor"
+          value={data?.averageMessages || 0}
+          precision={2}
+        />
+      </Spin>
+    </Card>
+  );
+};
+```
+
 - **Student Status:**
   - **Display:** Display a list or table of students who are not assigned to a tutor.
   - **UI Element:** Use a table component (e.g., from a UI library like Material UI, Ant Design, or a custom implementation). Include student names, and potentially other relevant information (e.g., registration date).
   - **Data Refresh:** Implement a refresh mechanism (e.g., on a button click or periodically) to fetch the data from the `api/students/unassigned` endpoint.
+
+```typescript
+// src/components/students/UnassignedStudents.tsx
+import { Table, Button, message } from "antd";
+import { useQuery } from "react-query";
+import { fetchUnassignedStudents } from "@/lib/api";
+
+interface Student {
+  id: string;
+  name: string;
+  registrationDate: string;
+}
+
+export const UnassignedStudents = () => {
+  const { data, isLoading, error, refetch } = useQuery<Student[]>(
+    "unassignedStudents",
+    fetchUnassignedStudents
+  );
+
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Registration Date",
+      dataIndex: "registrationDate",
+      key: "registrationDate",
+      render: (date: string) => new Date(date).toLocaleDateString(),
+    },
+  ];
+
+  if (error) {
+    message.error("Failed to load unassigned students");
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <Button onClick={() => refetch()}>Refresh Data</Button>
+      </div>
+      <Table
+        columns={columns}
+        dataSource={data}
+        loading={isLoading}
+        rowKey="id"
+      />
+    </div>
+  );
+};
+```
+
 - **Student Engagement:**
   - **Display:** Display two lists or tables: one for students with no interactions in the last 7 days and another for students with no interactions in the last 28 days.
   - **UI Element:** Use table components. Include student names and potentially other relevant information.
   - **Data Refresh:** Implement a refresh mechanism (e.g., on a button click or periodically) to fetch the data from the `api/students/inactive` endpoint, passing the appropriate `days` parameter (7 or 28).
+
+```typescript
+// src/components/students/StudentEngagement.tsx
+import { Tabs, Table, Button, message } from "antd";
+import { useQuery } from "react-query";
+import { fetchInactiveStudents } from "@/lib/api";
+
+interface InactiveStudent {
+  id: string;
+  name: string;
+  lastInteraction: string;
+}
+
+export const StudentEngagement = () => {
+  const sevenDaysQuery = useQuery<InactiveStudent[]>(
+    ["inactiveStudents", 7],
+    () => fetchInactiveStudents(7)
+  );
+
+  const twentyEightDaysQuery = useQuery<InactiveStudent[]>(
+    ["inactiveStudents", 28],
+    () => fetchInactiveStudents(28)
+  );
+
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Last Interaction",
+      dataIndex: "lastInteraction",
+      key: "lastInteraction",
+      render: (date: string) => new Date(date).toLocaleDateString(),
+    },
+  ];
+
+  const handleError = (error: Error) => {
+    message.error("Failed to load inactive students data");
+  };
+
+  return (
+    <Tabs defaultActiveKey="7days">
+      <Tabs.TabPane tab="7 Days Inactive" key="7days">
+        <div style={{ marginBottom: 16 }}>
+          <Button onClick={() => sevenDaysQuery.refetch()}>Refresh</Button>
+        </div>
+        <Table
+          columns={columns}
+          dataSource={sevenDaysQuery.data}
+          loading={sevenDaysQuery.isLoading}
+          rowKey="id"
+        />
+      </Tabs.TabPane>
+      <Tabs.TabPane tab="28 Days Inactive" key="28days">
+        <div style={{ marginBottom: 16 }}>
+          <Button onClick={() => twentyEightDaysQuery.refetch()}>
+            Refresh
+          </Button>
+        </div>
+        <Table
+          columns={columns}
+          dataSource={twentyEightDaysQuery.data}
+          loading={twentyEightDaysQuery.isLoading}
+          rowKey="id"
+        />
+      </Tabs.TabPane>
+    </Tabs>
+  );
+};
+```
+
+- **Export to Excel/CSV:**
+
+  - **Display:** Provide buttons to export the data to Excel or CSV format.
+  - **UI Element:** Use buttons or icons.
+  - **Data Export:** Implement API endpoints for exporting the data to Excel or CSV format. Use appropriate libraries (e.g., ExcelDataReader, EPPlus) to generate the Excel or CSV file.
+
+```tsx
+// src/components/ExportButtons.tsx
+import { Button } from "antd";
+import { FileExcelOutlined } from "@ant-design/icons";
+
+interface ExportButtonsProps {
+  days: number;
+  onExport: (format: "excel" | "csv") => void;
+}
+
+export const ExportButtons: React.FC<ExportButtonsProps> = ({
+  days,
+  onExport,
+}) => {
+  return (
+    <div className="flex gap-2">
+      <Button
+        type="primary"
+        icon={<FileExcelOutlined />}
+        onClick={() => onExport("excel")}
+      >
+        Export to Excel
+      </Button>
+    </div>
+  );
+};
+
+// Usage in parent component:
+const ParentComponent = () => {
+  const handleExport = async (format: "excel" | "csv") => {
+    try {
+      const response = await fetch(
+        `/api/reports/export?days=${days}&format=${format}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Export failed");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `report_${days}_days.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      message.error("Failed to export data");
+      console.error("Export error:", error);
+    }
+  };
+
+  return <ExportButtons days={days} onExport={handleExport} />;
+};
+```
+
+- **API Endpoints:**
+
+```typescript
+// src/lib/api.ts
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+export const fetchTutorPerformance = async () => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/messages/tutor-performance`
+  );
+  if (!response.ok) throw new Error("Failed to fetch tutor performance");
+  return response.json();
+};
+
+export const fetchUnassignedStudents = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/students/unassigned`);
+  if (!response.ok) throw new Error("Failed to fetch unassigned students");
+  return response.json();
+};
+
+export const fetchInactiveStudents = async (days: number) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/students/inactive?days=${days}`
+  );
+  if (!response.ok) throw new Error("Failed to fetch inactive students");
+  return response.json();
+};
+```
+
 - **General Considerations:**
   - **Error Handling:** Implement proper error handling to display informative messages to the user if the API calls fail.
   - **Loading Indicators:** Use loading indicators to provide feedback to the user while data is being fetched.
