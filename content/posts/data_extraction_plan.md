@@ -883,7 +883,7 @@ export const fetchInactiveStudents = async (days: number) => {
   - **Responsiveness:** Ensure the UI is responsive and adapts to different screen sizes.
   - **Authentication/Authorization:** Ensure that the frontend correctly handles authentication and authorization to protect the data.
 
-## 7. Conclusion
+## 8. Conclusion
 
 ## Implementation Conclusion
 
