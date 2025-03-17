@@ -28,6 +28,8 @@
 
 > "Levez les yeux, le monde est beaux" - Georges
 
+> "Jvous aime tous moins qu'moi, puis je m'aime meme pas tant" - Arno
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality"

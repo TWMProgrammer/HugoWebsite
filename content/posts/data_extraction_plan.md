@@ -885,4 +885,35 @@ export const fetchInactiveStudents = async (days: number) => {
 
 ## 7. Conclusion
 
-This plan provides a detailed strategy for extracting the required data points from the ETutoring application. The proposed implementation leverages the existing .NET backend and utilizes appropriate database queries and API endpoints. The frontend integration will focus on clear data visualization and user-friendly presentation, with considerations for data refresh, error handling, and accessibility.
+## Implementation Conclusion
+
+Our data extraction strategy employs a backend-focused approach using the .NET framework, leveraging two specialized libraries for report generation:
+
+**PDF Generation with PdfSharp:**
+
+- _Why Chosen:_ Provides MIT-licensed, lightweight PDF creation capabilities ideal for basic report requirements
+- _Advantages:_
+  - Zero licensing costs
+  - Low memory footprint
+  - Straightforward API for core PDF operations
+- _Limitations:_
+  - Lacks advanced features like digital signatures
+  - Limited documentation compared to commercial alternatives
+
+**Excel Reporting with ClosedXML:**
+
+- _Why Selected:_ Offers MIT-licensed Excel manipulation with balance between features and complexity
+- _Implementation:_ Database-driven report generation through Entity Framework Core queries
+- _Strengths:_
+  - Commercial-use friendly licensing
+- _Constraints:_
+  - Slower performance with datasets >100k rows
+  - Basic charting capabilities
+
+**Technical Recommendations:**
+
+1. Use asynchronous processing for reports exceeding 50 pages/10k rows
+2. Implement caching for frequently requested reports
+3. Monitor memory usage through ASP.NET Core diagnostics
+
+This backend-centric approach ensures secure, scalable data processing while maintaining frontend performance through optimized API responses and downloading the said Excel or PDF file.
