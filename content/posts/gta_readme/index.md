@@ -1,7 +1,4 @@
----
-title: "GTA - Readme"
-weight: 1
----
+# GTA - Readme
 
 ## Warning
 
