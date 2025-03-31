@@ -30,6 +30,8 @@
 
 > "Jvous aime tous moins qu'moi, puis je m'aime meme pas tant" - Arno
 
+> "It's not our job to charm snakes" - A random youtube comment
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality"
