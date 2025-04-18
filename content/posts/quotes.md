@@ -32,6 +32,8 @@
 
 > "It's not our job to charm snakes" - A random youtube comment
 
+> "Faire semblant d'avoir du talent ne le rendra pas plus vrai" - Lama ki vol
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality"
