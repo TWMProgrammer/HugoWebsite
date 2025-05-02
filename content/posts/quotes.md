@@ -62,8 +62,10 @@
 
 > Aware enough to know you wrong, but not smart enough to change your ways
 
-> I truly understood art when I caught myself sitting in front of a drawingfor hours
+> I truly understood art when I caught myself sitting in front of a drawing for hours
 
 > To break the rules, you gotta learn them first
 
 > The masks we put on for society take on a personality of their own if we are not careful
+
+> Qu'ils coexistent avec nous dans ce monde, d'accord, mais il est hors de question qu'ils cohabitent avec nous
