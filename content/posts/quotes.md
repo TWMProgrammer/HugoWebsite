@@ -34,6 +34,8 @@
 
 > "Faire semblant d'avoir du talent ne le rendra pas plus vrai" - Lama ki vol
 
+> "Theres a fuck ton of stupid people in the room and I try not to be one of them" - Mutahar
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality"
@@ -69,3 +71,5 @@
 > The masks we put on for society take on a personality of their own if we are not careful
 
 > Qu'ils coexistent avec nous dans ce monde, d'accord, mais il est hors de question qu'ils cohabitent avec nous
+
+> Love how kids hide behind irony to try to show what they really like but don't dare to make fun of it
