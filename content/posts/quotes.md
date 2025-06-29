@@ -60,6 +60,8 @@
 
 > "You gotta stop asking the consumer to take responsibility for the business"
 
+> "If a group or community can't accurately exile its own bad actors and extremists it will become defined by them"
+
 ## My own quotes
 
 > Aware enough to know you wrong, but not smart enough to change your ways
@@ -73,3 +75,5 @@
 > Qu'ils coexistent avec nous dans ce monde, d'accord, mais il est hors de question qu'ils cohabitent avec nous
 
 > Love how kids hide behind irony to try to show what they really like but don't dare to make fun of it
+
+> You know I love my niggas right? Well I might be loving them a little too much
