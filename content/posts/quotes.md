@@ -36,6 +36,8 @@
 
 > "Theres a fuck ton of stupid people in the room and I try not to be one of them" - Mutahar
 
+> "I’m stuck between I want your attention, but I don’t want to disturb you" - Linh
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality"
