@@ -38,6 +38,10 @@
 
 > "I’m stuck between I want your attention, but I don’t want to disturb you" - Linh
 
+> "Dans une économie morderne la première dose est gratuite" - Léo Duff
+
+> "Les miracles économiques n'existent pas, il n'y a que des dettes qu'on n'a pas encore payé" - Léo Duff
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality"
@@ -63,6 +67,8 @@
 > "You gotta stop asking the consumer to take responsibility for the business"
 
 > "If a group or community can't accurately exile its own bad actors and extremists it will become defined by them"
+
+> "You tried selling potatoes, it didn't work. You tried selling cheese, not that much cheese. You tried selling hamburgers, McDonald's was better. But have you ever tried selling crack? There's where the money is."
 
 ## My own quotes
 
