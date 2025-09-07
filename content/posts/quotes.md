@@ -42,6 +42,8 @@
 
 > "Les miracles économiques n'existent pas, il n'y a que des dettes qu'on n'a pas encore payé" - Léo Duff
 
+> "You're mentally unstable but you gotta project stability" - Leonid
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality"
