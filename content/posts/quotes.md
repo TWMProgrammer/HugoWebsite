@@ -44,11 +44,15 @@
 
 > "You're mentally unstable but you gotta project stability" - Leonid
 
+> "The dildo of concequences rarely arrives lubed" - Nuxanor
+
+> "They don't kill you because you're a nazi, the call you a nazi so they can kill you" - A random tweet
+
 ## Asmongold
 
-> "Why would you expect them to be accountable to reality"
+> "Why would you expect them to be accountable to reality?"
 
-> "I you act like psycho, you're a psycho"
+> "If you act like psycho, you're a psycho"
 
 > "Why are we padding out society for him to be bouncing around in it? He's so lucky to be living in this day and age"
 
@@ -60,7 +64,7 @@
 
 > "I love revenge. Absolutely. That's a bad thing to do? No it's not. That bad thing to do is to allow bad actors to exist without concequences"
 
-> "This is the problem. Guys don't have enought girls to have sex with and girls don't have enough guys to have relationship with"
+> "This is the problem. Guys don't have enough girls to have sex with and girls don't have enough guys to have relationships with"
 
 > "No. You don't listen to the experts, you listen to their experts"
 
