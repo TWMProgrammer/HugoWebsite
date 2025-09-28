@@ -48,6 +48,8 @@
 
 > "They don't kill you because you're a nazi, the call you a nazi so they can kill you" - A random tweet
 
+> "On pleure pour un mot, mais on danse sur une mort" - Georges
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality?"
