@@ -49,7 +49,7 @@
 > "They don't kill you because you're a nazi, the call you a nazi so they can kill you" - A random tweet
 
 > "On pleure pour un mot, mais on danse sur une mort" - Georges
->
+
 > "If a piece of writing does not stand up to cursary scrutiny, it is not worth the reader's time" - Despot of Antrim
 
 ## Asmongold
