@@ -52,6 +52,10 @@
 
 > "If a piece of writing does not stand up to cursary scrutiny, it is not worth the reader's time" - Despot of Antrim
 
+> "Il n'y a qu'un seul problème philosophique important, le suicide. " - Albert Camus
+
+> "Le mystère de la vie n'est pas un problème à résoudre, mais une réalité à vivre." - Frank Herber --> Grabriel Marcel
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality?"
