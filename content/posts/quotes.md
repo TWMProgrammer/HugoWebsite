@@ -56,6 +56,8 @@
 
 > "Le mystère de la vie n'est pas un problème à résoudre, mais une réalité à vivre." - Frank Herber --> Grabriel Marcel
 
+> “You can silence a room of 100 scholars with 1 fact, but you can never silence an idiot with 100 facts.” - A youtube comment
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality?"
