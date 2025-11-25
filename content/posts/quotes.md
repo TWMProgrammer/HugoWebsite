@@ -58,6 +58,8 @@
 
 > “You can silence a room of 100 scholars with 1 fact, but you can never silence an idiot with 100 facts.” - A youtube comment
 
+> "I do not care what makes you cry, I have seen what makes you smile." - A random youtube comment
+
 ## Asmongold
 
 > "Why would you expect them to be accountable to reality?"
