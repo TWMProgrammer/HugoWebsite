@@ -4,10 +4,11 @@
 This report summarizes the server’s current configuration and provides a production action plan. The focus is performance, security, economy stability, grief prevention, and player experience.
 
 **Key Findings:**
-*   **Security:** `online-mode=false` and a Discord bot token is stored in plaintext; both are production blockers.
+*   **Security:** `online-mode=false` and plaintext Discord secrets exist in configs (EssentialsDiscord token, VanguardRanks webhook); both are production blockers.
 *   **Performance:** `view-distance=12` and `simulation-distance=12` are high for production; `max-chained-neighbor-updates=1000000` is a redstone lag/DOS risk.
 *   **Anti-Xray:** Paper anti-xray is present but currently disabled.
-*   **Economy:** DailyRewards/CrazyAuctions are mostly default and currently inject high-value items (diamonds) without an economy model.
+*   **Economy:** DailyRewards/CrazyAuctions/VanguardRanks include default-style faucets (diamonds and direct money grants) without a defined economy model.
+*   **PvP / Progression:** LifeStealZ introduces heart-loss on death and elimination behavior (default: ban on elimination), which must match your intended gameplay loop.
 *   **Nametag Systems:** TAB scoreboard teams are enabled and PvPManager also uses scoreboard teams, which commonly conflicts.
 
 ---
@@ -66,11 +67,13 @@ The following plugins have been identified from the `plugins/*.jar` inventory (n
 *   **ExcellentCrates:** Crate keys and rewards.
 *   **DailyRewards:** Daily login bonuses.
 *   **PvPManager:** Combat logging and PvP toggling.
+*   **VanguardRanks:** Rank progression (requirements + rewards) with Vault/LuckPerms/Essentials-kit integration.
 *   **nightcore:** Economy/currency engine dependency for some plugins.
 
 ### **Gameplay & Mechanics**
 *   **BetterRTP:** Random teleportation.
 *   **AxGraves:** Death chests/graves.
+*   **LifeStealZ (Lifestealz):** Lifesteal SMP mechanics (hearts gained/lost on kills/deaths, elimination/revive items).
 *   **TerraformGenerator:** Custom world generation.
 *   **ClearLaggEnhanced:** Entity and item lag clearing.
 *   **TpaGui:** GUI for teleport requests.
@@ -92,6 +95,22 @@ The following plugins have been identified from the `plugins/*.jar` inventory (n
 *   **ClearLaggEnhanced:**
     *   Current: whitelist includes villagers, armor stands, item frames, paintings, and multiple vehicle types.
     *   *Risk to review:* Clearing systems can still break farms and item transport if tuned aggressively. Your current config is not overly destructive by default.
+*   **LifeStealZ (Lifestealz):**
+    *   **Files:** `plugins/LifeStealZ/config.yml`, `plugins/LifeStealZ/items.yml`, `plugins/LifeStealZ/storage.yml`
+    *   **What it does:** Lifesteal SMP ruleset (hearts move on kills, hearts lost on death, elimination/revive flow).
+    *   **Current state (notable defaults):**
+        *   `startHearts: 10`, `maxHearts: 20`
+        *   `heartsPerKill: 1`, `heartsPerNaturalDeath: 1`
+        *   Natural deaths reduce hearts (`looseHeartsToNature: true`) and player kills reduce hearts (`looseHeartsToPlayer: true`)
+        *   Elimination bans players by default (`disablePlayerBanOnElimination: false`)
+        *   Anti-alt checks enabled, but not blocking by default (`antiAlt.enabled: true`, `antiAlt.preventKill: false`)
+    *   **Production risks:**
+        *   Default elimination ban can be harsh for survival servers, especially with heart-loss on natural deaths.
+        *   Custom heart/revive items have crafting recipes; review costs to prevent trivial bypassing of elimination.
+        *   PvP-related plugins can overlap: verify PvPManager settings (combat rules, drop behavior, scoreboard health display) don’t create confusing death/combat outcomes.
+    *   **Configuration plan (recommended):**
+        *   Decide whether this is a full “lifesteal SMP” season mechanic or a soft progression system, then tune `heartsPerNaturalDeath`, `minHearts`, and elimination behavior accordingly.
+        *   If you keep elimination, define the moderation workflow (appeals, revive rules, alt handling) and update your rules/help menus to match.
 *   **PvPManager:**
     *   Current: `Use Scoreboard Teams: true` is enabled.
     *   *High likelihood of conflict:* TAB has `scoreboard-teams.enabled: true`. Decide which plugin owns scoreboard teams to avoid flickering/nametag overrides.
@@ -120,6 +139,19 @@ The following plugins have been identified from the `plugins/*.jar` inventory (n
 *   **DailyRewards:**
     *   Current: config is mostly default and currently issues iron/gold/diamonds/emeralds at fixed intervals.
     *   **Production risk:** Injecting diamonds/emeralds on timers will destabilize any survival economy (shops, AH, crates, mining value).
+*   **VanguardRanks:**
+    *   **Files:** `plugins/VanguardRanks/config.yml`, `plugins/VanguardRanks/ranks.yml`, `plugins/VanguardRanks/save.yml`
+    *   **What it does:** Rank-up progression with configurable requirements (PlaceholderAPI/Vault) and reward commands (Vault money, LuckPerms permissions, titles).
+    *   **Current state:** Default ranks include direct money grants via `eco give` and kit permission grants via LuckPerms.
+    *   **Production risks:**
+        *   Rank-up money (`eco give`) is a steady currency faucet and will inflate balances unless paired with strong sinks/taxes.
+        *   The Discord webhook is stored in plaintext (even if `discord.enabled: false`), so treat it as compromised if the config is ever shared.
+        *   Rank progress is stored by UUID in `save.yml`; switching `online-mode` later can invalidate stored ranks (UUIDs change between offline/online).
+    *   **Configuration plan (recommended):**
+        *   Decide the economy role of ranks: cosmetics/QoL only, or meaningful money rewards with matching sinks.
+        *   Reduce or remove `eco give` from rank commands unless you intentionally want rank-based payouts.
+        *   Remove/rotate the Discord webhook value and store it outside shareable configs if you actually use Discord posts.
+        *   Finalize `online-mode=true` before opening to players, or plan a rank data migration/wipe when switching.
 *   **CrazyAuctions:**
     *   Current: mostly default settings (price caps, minimums, durations).
     *   **Production risk:** Without listing limits, taxes, anti-dupe monitoring, and item restrictions, AH becomes the economy’s primary exploit surface.
@@ -133,7 +165,7 @@ The following plugins have been identified from the `plugins/*.jar` inventory (n
 ## 5. Security & Anti-Cheat
 *   **Production blockers:**
     *   `online-mode=false` breaks identity guarantees and makes punishments/logs unreliable.
-    *   Secrets stored in plaintext (Discord token, management secret) must be rotated and handled safely.
+    *   Secrets stored in plaintext (EssentialsDiscord token, VanguardRanks webhook, management secret) must be rotated and handled safely.
 *   **Protect (WorldGuard alternative for 1.21.9):**
     *   Protect is a WorldGuard-like region protection plugin that provides “areas” with flags (entry/exit, damage, hunger, redstone, liquid flow, physics, greetings/farewell messages, etc.) and is designed with a robust API and permission packs.
     *   Use Protect for spawn/hub regions and staff-managed protected areas while staying on 1.21.9.
@@ -271,8 +303,8 @@ We will prioritize **Permissions** to hide commands, using `CommandBlocker` only
 
 ## 8. Production Configuration Plans
 ### 8.1 Launch Gating Checklist (Before Public Release)
-*   Authentication policy finalized (`online-mode` decision + UUID mode alignment across plugins).
-*   Secrets handled safely (rotate Discord token, remove plaintext secrets from shared storage).
+*   Authentication policy finalized (`online-mode` decision + UUID mode alignment across plugins, including VanguardRanks rank storage).
+*   Secrets handled safely (rotate Discord token/webhooks, remove plaintext secrets from shared storage).
 *   Grief protection in place (claims/regions) and spawn protected.
 *   Economy model defined (currency sources/sinks, crate odds, AH limits/taxes, anti-inflation).
 *   Performance budget set (target MSPT and player count) with Spark baselines taken.
@@ -285,6 +317,7 @@ We will prioritize **Permissions** to hide commands, using `CommandBlocker` only
 
 ### 8.3 Economy Stability Plan
 *   Remove/replace high-value item injections (diamonds/emeralds) from DailyRewards unless they are intentionally abundant.
+*   Review VanguardRanks rank-up rewards (money/kit unlocks) to avoid inflation.
 *   Define currency sinks (teleport costs, repair fees, crate opening costs, auction taxes).
 *   Define listing limits (per-player concurrent listings, min/max prices, restricted items).
 *   Decide whether crates are cosmetic-only or economy-impacting, then tune odds accordingly.
