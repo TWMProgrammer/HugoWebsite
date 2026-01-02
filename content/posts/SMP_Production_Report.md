@@ -103,6 +103,20 @@ The following plugins have been identified from the `plugins/*.jar` inventory (n
 *   **EssentialsDiscord:**
     *   Current: `guild` is set to all zeros and the staff channel ID is all zeros.
     *   **CRITICAL SECURITY ISSUE:** A Discord bot `token` is present in plaintext in the config. Treat it as compromised: rotate it immediately and do not store secrets in files that might be shared.
+*   **Essentials (worth.yml / server sell prices):**
+    *   **File:** `plugins/Essentials/worth.yml`
+    *   **What it does:** Controls what items can be sold (typically via `/sell` and `/worth`). Items not listed cannot be sold.
+    *   **Current state:** A large worth list is present and allows selling many items, including high-value economy drivers (e.g., diamonds/diamond blocks/ores) and some blocks that are usually non-survival or restricted (e.g., bedrock). The file also contains legacy-style material keys and data-value sections (e.g., `wool: '0': 20`, `leaves:`), which may not map cleanly on modern versions.
+    *   **Production risks:**
+        *   Server selling becomes a primary currency faucet and can quickly inflate balances, especially if ores/gems are sellable.
+        *   Legacy material/data-value entries can behave unexpectedly (wrong items priced, or items not sellable) after version jumps.
+        *   Farmable items (cactus/sugarcane, etc.) can dominate the economy if server buy prices are too generous.
+    *   **Configuration plan (recommended):**
+        *   Decide whether you want server-selling at all. If your economy is meant to be player-driven (shops/AH), keep `worth.yml` minimal.
+        *   Whitelist only low-impact, farmable “utility” outputs (e.g., common crops, basic mob drops) and set payouts low enough that player shops/AH remain competitive.
+        *   Disable or remove all “wealth drivers” from server selling unless intentionally abundant: ores/ingots, diamonds/emeralds, blocks of metals/gems, redstone/lapis, etc.
+        *   Remove entries for restricted/non-survival blocks (e.g., bedrock) so they cannot be converted into money if obtained via exploits.
+        *   Normalize entries to modern material naming (and avoid data values) to reduce version-mapping ambiguity; verify each key by testing `/worth <item>` and `/sell` with sample stacks.
 *   **DailyRewards:**
     *   Current: config is mostly default and currently issues iron/gold/diamonds/emeralds at fixed intervals.
     *   **Production risk:** Injecting diamonds/emeralds on timers will destabilize any survival economy (shops, AH, crates, mining value).
@@ -256,31 +270,31 @@ We will prioritize **Permissions** to hide commands, using `CommandBlocker` only
 ---
 
 ## 8. Production Configuration Plans
-### 9.1 Launch Gating Checklist (Before Public Release)
+### 8.1 Launch Gating Checklist (Before Public Release)
 *   Authentication policy finalized (`online-mode` decision + UUID mode alignment across plugins).
 *   Secrets handled safely (rotate Discord token, remove plaintext secrets from shared storage).
 *   Grief protection in place (claims/regions) and spawn protected.
 *   Economy model defined (currency sources/sinks, crate odds, AH limits/taxes, anti-inflation).
 *   Performance budget set (target MSPT and player count) with Spark baselines taken.
 
-### 9.2 Backups & Recovery
+### 8.2 Backups & Recovery
 *   Backup cadence: at least daily (worlds + `plugins/` configs + permissions exports).
 *   Retention: short-term frequent (e.g., 7–14 daily) + long-term weekly/monthly snapshots.
 *   Offsite storage: at least one external location (not on the same disk/host).
 *   Restore drill: documented steps and a quarterly test restore to a staging copy.
 
-### 9.3 Economy Stability Plan
+### 8.3 Economy Stability Plan
 *   Remove/replace high-value item injections (diamonds/emeralds) from DailyRewards unless they are intentionally abundant.
 *   Define currency sinks (teleport costs, repair fees, crate opening costs, auction taxes).
 *   Define listing limits (per-player concurrent listings, min/max prices, restricted items).
 *   Decide whether crates are cosmetic-only or economy-impacting, then tune odds accordingly.
 
-### 9.4 Anti-Grief & Moderation Workflow
+### 8.4 Anti-Grief & Moderation Workflow
 *   Pick a claiming/protection solution and standardize it (player claims + staff regions).
 *   Define staff response flow (CoreProtect lookup/rollback policy, ban escalation templates).
 *   Decide log retention and storage (SQLite vs MariaDB) for CoreProtect based on expected activity.
 
-### 9.5 Performance & World Management
+### 8.5 Performance & World Management
 *   World border defined and Chunky pregen executed before launch.
 *   Entity-clearing and limiters tuned to preserve player builds/farms.
 *   Single source of truth for nametags/teams (TAB vs PvPManager vs scoreboard plugins).
