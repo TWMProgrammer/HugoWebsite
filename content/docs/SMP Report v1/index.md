@@ -1,3 +1,8 @@
+---
+title: SMP Report v1
+weight: 1
+---
+
 # SMP Production Readiness Report
 
 ## 1. Executive Summary
