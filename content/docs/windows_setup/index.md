@@ -19,13 +19,13 @@ PC windows installation:
 
   - UniGetUI with bundle
 
-  - Installer drivers from SNI (if not done yet)
+  - Install drivers from SNI (if not done yet)
 
   - Install driver for your GPU if you want
 
 - Winaero Tweaker (Last touches)
 
-- Wintoys after that
+- Powertoys if needed
 
 # Customisation
 
@@ -77,7 +77,5 @@ Jellyfin %web2% | %time2%
 #### Result
 
 ![image3.png](media/image3.png)
-
-VR Games
 
 Network Stack
